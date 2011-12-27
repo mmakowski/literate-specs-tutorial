@@ -1,6 +1,7 @@
 package acceptance
 
 import org.specs2._
+import org.specs2.specification.Given
 
 import org.junit.runner._
 import runner._
@@ -13,13 +14,14 @@ When our users are served documents that originate from Data Provider Corporatio
 
 DPC provides a web service that performs the authorisation. Our system works out whether the document accessed was provided by DPC and if so, invokes the plug-in to authorise against the DPC web service.
 
-Let's say that within DPC user `g.osborne` has the following permissions:
+Let's say that within DPC user `${g.osborne}` has the following permissions:
 
-Document Id       | Access Allowed
-------------------|----------------
-`budgets/uk/2011` | yes
-`budgets/us/2012` | no
+Document Id          | Access Allowed
+---------------------|----------------
+`${budgets/uk/2011}` | ${yes}
+`${budgets/us/2012}` | ${no}
 
+""" ^ dpcPermissions ^ """
 ### User is given access if allowed by DPC
 
 When the user tries to access document `budgets/uk/2011`, which is provided by DPC, the system makes a call to the plug-in providing the user id and document id.
@@ -52,4 +54,21 @@ This time the service responds:
 
 as a result of which the user is denied the access to this document.
 """ ^ end
+
+  // 1. DPC permissions 
+
+  private class DpcPermissions(val userId: String, val permissionMap: Map[String, Boolean])
+  
+  private object dpcPermissions extends Given[DpcPermissions] {
+    def extract(text: String) = {
+      val userId::permissions = extractAll(text)
+      val permissionMap = mkMap (permissions) mapValues (_ == "yes")
+      new DpcPermissions(userId, permissionMap)
+    }
+  }
+
+  // utilities
+
+  private def mkMap(s: Seq[String]) = (s grouped 2 map mkPair) toMap
+  private def mkPair(s: Seq[String]) = (s(0), s(1))
 }
