@@ -1,7 +1,7 @@
 package acceptance
 
 import org.specs2._
-import org.specs2.specification.Given
+import org.specs2.specification.{Given, When}
 
 import org.junit.runner._
 import runner._
@@ -24,8 +24,8 @@ Document Id          | Access Allowed
 """ ^ dpcPermissions ^ """
 ### User is given access if allowed by DPC
 
-When the user tries to access document `budgets/uk/2011`, which is provided by DPC, the system makes a call to the plug-in providing the user id and document id.
-
+When the user tries to access document `${budgets/uk/2011}`, which is provided by DPC, the system makes a call to the plug-in providing the user id and document id.
+""" ^ documentId ^ """
 Based on the information provided, the plug-in works out the request parameters for the DPC web service:
 
 -------------|--------------------
@@ -64,6 +64,18 @@ as a result of which the user is denied the access to this document.
       val userId::permissions = extractAll(text)
       val permissionMap = mkMap (permissions) mapValues (_ == "yes")
       new DpcPermissions(userId, permissionMap)
+    }
+  }
+
+  // 2. Document id 
+
+  private class DocumentId(val documentId: String, previousContext: DpcPermissions) 
+      extends DpcPermissions(previousContext.userId, previousContext.permissionMap)
+  
+  private object documentId extends When[DpcPermissions, DocumentId] {
+    def extract(previousContext: DpcPermissions, text: String) = {
+      val documentId = extract1(text)
+      new DocumentId(documentId, previousContext)
     }
   }
 
