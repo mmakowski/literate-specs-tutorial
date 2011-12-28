@@ -28,15 +28,15 @@ When the user tries to access document `${budgets/uk/2011}`, which is provided b
 """ ^ documentId ^ """
 Based on the information provided, the plug-in works out the request parameters for the DPC web service:
 
--------------|--------------------
-`systemId`   | `42`
-`userId`     | `g.osborne`
-`documentId` | `budgets/uk/2011`
+----------------|--------------------
+`${systemId}`   | `${42}`
+`${userId}`     | `${g.osborne}`
+`${documentId}` | `${budgets/uk/2011}`
 
 and makes a call to the service, which responds:
 
-    ALLOW
-
+    ${ALLOW}
+""" ^ requestAndResponse ^ """
 as a result the user is given access to the document.
 
 ### User is denied access if denied by DPC
@@ -78,6 +78,21 @@ as a result of which the user is denied the access to this document.
       new DocumentId(documentId, previousContext)
     }
   }
+
+  // 3. Request and response 
+
+  private class RequestAndResponse(val expectedRequestParams: Map[String, String], val response: String, previousContext: DocumentId)
+      extends DocumentId(previousContext.documentId, previousContext)
+  
+  private object requestAndResponse extends When[DocumentId, RequestAndResponse] {
+    def extract(previousContext: DocumentId, text: String) = {
+      val tokens = extractAll(text)
+      val expectedRequestParams = mkMap (tokens.init)
+      val response = tokens.last
+      new RequestAndResponse(expectedRequestParams, response, previousContext)
+    }  
+  }
+  
 
   // utilities
 
