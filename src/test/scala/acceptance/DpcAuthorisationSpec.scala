@@ -1,7 +1,7 @@
 package acceptance
 
 import org.specs2._
-import org.specs2.specification.{Given, When}
+import org.specs2.specification.{Given, When, Then}
 
 import org.junit.runner._
 import runner._
@@ -38,7 +38,7 @@ and makes a call to the service, which responds:
     ${ALLOW}
 """ ^ requestAndResponse ^ """
 as a result the user is given access to the document.
-
+""" ^ accessAllowed ^ """
 ### User is denied access if denied by DPC
 
 When the same user tries to access another document provided by DPC, `budgets/us/2012`, the system again calls the plug-in, which makes a call to the web service with parameters:
@@ -93,7 +93,22 @@ as a result of which the user is denied the access to this document.
     }  
   }
   
+  // 4. Access allowed
+  
+  private object accessAllowed extends Then[RequestAndResponse] {
+    def extract(context: RequestAndResponse, text: String) = {
+      val response = invokePlugIn (context)
+      response === true
+    }
+  } 
 
+  // plug-in invocation 
+  
+  private def invokePlugIn(context: RequestAndResponse) = {
+    val authorisation = new com.mmakowski.tutorial.literatespecs.DpcAuthorisation
+    authorisation request (context.userId, context.documentId)
+  }
+  
   // utilities
 
   private def mkMap(s: Seq[String]) = (s grouped 2 map mkPair) toMap
