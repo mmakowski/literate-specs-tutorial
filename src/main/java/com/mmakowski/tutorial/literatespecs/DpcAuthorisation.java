@@ -12,6 +12,6 @@ public class DpcAuthorisation {
      * @throws RuntimeException if any error is encountered during authorisation
      */
     public boolean request(String userId, String documentId) {
-        throw new RuntimeException("TODO");
+        return true;
     }
 }
