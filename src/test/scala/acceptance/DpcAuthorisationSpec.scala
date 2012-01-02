@@ -45,19 +45,20 @@ as a result the user is given access to the document.
 """ ^ accessAllowed ^ """
 ### User is denied access if denied by DPC
 
-When the same user tries to access another document provided by DPC, `budgets/us/2012`, the system again calls the plug-in, which makes a call to the web service with parameters:
+When the same user tries to access another document provided by DPC, `${budgets/us/2012}`, the system again calls the plug-in, which makes a call to the web service with parameters:
+""" ^ documentId ^ """
 
--------------|--------------------
-`systemId`   | `42`
-`userId`     | `g.osborne`
-`documentId` | `budgets/us/2012`
+----------------|--------------------
+`${systemId}`   | `${42}`
+`${userId}`     | `${g.osborne}`
+`${documentId}` | `${budgets/us/2012}`
 
 This time the service responds:
 
-    DENY
-
+    ${DENY}
+""" ^ requestAndResponse ^ """
 as a result of which the user is denied the access to this document.
-""" ^ end
+""" ^ accessDenied ^ end
 
   // 1. DPC permissions 
 
@@ -104,6 +105,15 @@ as a result of which the user is denied the access to this document.
       val response = invokePlugIn (context)
       verifyThat (response === true)
       context
+    }
+  } 
+
+  // 5. Access denied
+  
+  private object accessDenied extends Then[RequestAndResponse] {
+    def extract(context: RequestAndResponse, text: String) = {
+      val response = invokePlugIn (context)
+      response === false
     }
   } 
 
