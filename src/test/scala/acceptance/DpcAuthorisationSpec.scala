@@ -1,6 +1,7 @@
 package acceptance
 
 import org.specs2._
+import org.specs2.execute.Result
 import org.specs2.specification.{Given, When, Then}
 
 import org.junit.runner._
@@ -98,10 +99,11 @@ as a result of which the user is denied the access to this document.
   
   // 4. Access allowed
   
-  private object accessAllowed extends Then[RequestAndResponse] {
+  private object accessAllowed extends When[RequestAndResponse, DpcPermissions] {
     def extract(context: RequestAndResponse, text: String) = {
       val response = invokePlugIn (context)
-      response === true
+      verifyThat (response === true)
+      context
     }
   } 
 
@@ -158,4 +160,5 @@ as a result of which the user is denied the access to this document.
 
   private def mkMap(s: Seq[String]) = (s grouped 2 map mkPair) toMap
   private def mkPair(s: Seq[String]) = (s(0), s(1))
+  private def verifyThat(result: Result) = if (!(result isSuccess)) throw new Exception(result.message)
 }
