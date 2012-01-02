@@ -120,11 +120,12 @@ as a result of which the user is denied the access to this document.
   // plug-in invocation 
   
   private def invokePlugIn(context: RequestAndResponse) = {
+    val host = "localhost"
     val port = 38112
     
     val server = startWebServiceWith(context, port)
     try {
-      val authorisation = new com.mmakowski.tutorial.literatespecs.DpcAuthorisation
+      val authorisation = new com.mmakowski.tutorial.literatespecs.DpcAuthorisation(host, port)
       authorisation request (context.userId, context.documentId)
     } finally {
       server stop()

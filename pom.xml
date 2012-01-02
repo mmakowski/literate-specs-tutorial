@@ -76,6 +76,19 @@
 	</build>
 
 	<dependencies>
+		<!-- for issuing HTTP requests -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.1.2</version>
+		</dependency>
+		<!-- convenient collections -->
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>r09</version>
+		</dependency>
+	
 		<!-- testing -->
 		<dependency>
 			<groupId>junit</groupId>
