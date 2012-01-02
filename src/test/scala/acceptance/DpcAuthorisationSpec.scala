@@ -6,6 +6,9 @@ import org.specs2.specification.{Given, When, Then}
 import org.junit.runner._
 import runner._
 
+import org.mortbay.jetty.Server
+import org.mortbay.jetty.handler.AbstractHandler
+
 @RunWith(classOf[JUnitRunner])
 class DpcAuthorisationSpec extends Specification { def is = literate ^ 
 "Authorisation with DPC".title ^
@@ -105,8 +108,50 @@ as a result of which the user is denied the access to this document.
   // plug-in invocation 
   
   private def invokePlugIn(context: RequestAndResponse) = {
-    val authorisation = new com.mmakowski.tutorial.literatespecs.DpcAuthorisation
-    authorisation request (context.userId, context.documentId)
+    val port = 38112
+    
+    val server = startWebServiceWith(context, port)
+    try {
+      val authorisation = new com.mmakowski.tutorial.literatespecs.DpcAuthorisation
+      authorisation request (context.userId, context.documentId)
+    } finally {
+      server stop()
+    }
+  }
+
+  private def startWebServiceWith(context: RequestAndResponse, port: Int) = {
+    val server = new Server(port)
+    server setHandler handlerFor(context)
+    server start()
+    server
+  }
+  
+  private def handlerFor(context: RequestAndResponse) = new AbstractHandler () {
+    import javax.servlet.http.HttpServletRequest
+    import javax.servlet.http.HttpServletResponse
+    import javax.servlet.http.HttpServletResponse._
+    import scala.collection.JavaConversions._
+
+    def handle(target: String, httpRequest: HttpServletRequest, httpResponse: HttpServletResponse, dispatch: Int) = {
+      httpResponse setContentType "text/plain"
+      val actualRequestParams = paramsOf(httpRequest)
+      if (actualRequestParams == context.expectedRequestParams) respondOk (httpResponse)
+      else respondBadRequest (httpResponse, actualRequestParams)
+      httpRequest.asInstanceOf[org.mortbay.jetty.Request] setHandled true
+    }
+  
+    private def paramsOf(httpRequest: HttpServletRequest) = 
+      mapAsScalaMap(httpRequest.getParameterMap).toMap.asInstanceOf[Map[String, Array[String]]] mapValues (_(0))
+    
+    private def respondOk(httpResponse: HttpServletResponse) = {
+        httpResponse setStatus SC_OK
+        httpResponse.getWriter println context.response
+    }
+    
+    private def respondBadRequest(httpResponse: HttpServletResponse, actualRequestParams: Map[String, String]) = {
+      System.err println ("unexpected request params: " + actualRequestParams)
+      httpResponse setStatus SC_BAD_REQUEST
+    }
   }
   
   // utilities

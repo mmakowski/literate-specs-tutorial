@@ -96,5 +96,12 @@
 			<version>1.0.2</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- to run a stub web service in acceptance tests -->
+		<dependency>
+			<groupId>org.mortbay.jetty</groupId>
+			<artifactId>jetty</artifactId>
+			<version>6.1.25</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>
